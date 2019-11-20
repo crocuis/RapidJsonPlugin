@@ -315,7 +315,7 @@ template <typename DataType> struct ValueExtractor<TOptional<DataType>>
 	static TOptional<DataType>
 		ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
 	{
-		if (value.IsSet())
+		if (value.IsNull())
 		{
 			return TOptional<DataType>();
 		}
