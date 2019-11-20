@@ -13,20 +13,20 @@ JSON_EXTERNAL_DEFINE(FVector, X, Y, Z);
 
 struct Sample_member_struct
 {
-    TArray<int32> Arr;
-	TArray<FVector> Arr2;
-	Word Word;
-
-	JSON_DEFINE(Arr, Arr2, Word);
+  TArray<int32> Arr;
+  TArray<FVector> Arr2;
+  Word Word;
+    
+  JSON_DEFINE(Arr, Arr2, Word);
 };
 
 struct Sample_struct
 {
-	int32 TestInt;
-	FString TestStr;
-	sample_member_struct My_struct;
+  int32 TestInt;
+  FString TestStr;
+  sample_member_struct My_struct;
 
-	JSON_DEFINE(TestInt, TestStr, My_struct)
+  JSON_DEFINE(TestInt, TestStr, My_struct)
 };
 
 Sample_member_struct member;
