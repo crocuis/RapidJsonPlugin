@@ -13,7 +13,7 @@ public class RapidJson : ModuleRules
     }
 
     public RapidJson(ReadOnlyTargetRules Target) : base(Target)
-	{
+    {
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
@@ -22,7 +22,7 @@ public class RapidJson : ModuleRules
                 "Core", "CoreUObject", "Engine",
             }
 		);
-					
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{

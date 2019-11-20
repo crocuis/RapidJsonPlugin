@@ -42,12 +42,12 @@ template <typename FirstType, typename SecondType>
 struct IsPair<std::pair<FirstType, SecondType>> : TrueType
 {
 };
-	
+
 template <typename, typename = void> struct TreatAsArray : FalseType
 {
 };
 
-	
+
 /**
  * @note Uses SFINAE to detect whether the input type has a `ValueType` definition, and if it does,
  * additional type traits will determine whether we're dealing with a container whose value type is
@@ -109,7 +109,7 @@ struct TreatAsObject<DataType, future_std::void_t<typename DataType::ElementType
         TrueType, FalseType>::Type
 {
 };
-	
+
 template <typename DataType> struct TreatAsValue
 {
     static constexpr bool Value =
@@ -128,7 +128,7 @@ struct HasToJson<
 };
 
 template <typename, typename, typename, typename = void> struct HasFromJson : FalseType
-{	
+{
 };
 
 template <typename DataType, typename EncodingType, typename AllocatorType>

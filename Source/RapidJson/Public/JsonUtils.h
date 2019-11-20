@@ -15,7 +15,7 @@ ContainerType Deserialize(StreamType& stream)
     rapidjson::GenericDocument<EncodingType> document;
     document.ParseStream(stream);
 
-    if (document.HasParseError()) 
+    if (document.HasParseError())
 	{
 		throw std::invalid_argument("Could not parse JSON document.");
 	}
@@ -72,7 +72,7 @@ template <typename ContainerType>
 JSON_UTILS_NODISCARD ContainerType DeserializeFromJson(const TCHAR* const json)
 {
 	using EncodingType = rapidjson::UTF16<>;
-	
+
 	rapidjson::GenericStringStream<EncodingType> string_stream{ json };
 	return Detail::Deserialize<ContainerType, EncodingType>(string_stream);
 }

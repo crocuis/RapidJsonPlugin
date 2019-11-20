@@ -1,5 +1,3 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
-
 #include "RapidJson.h"
 
 #define LOCTEXT_NAMESPACE "FRapidJsonModule"
@@ -16,5 +14,5 @@ void FRapidJsonModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FRapidJsonModule, RapidJson)

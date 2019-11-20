@@ -62,7 +62,7 @@ template <> struct KeyHolder<TCHAR>
 		return *data;
 	}
 };
-	
+
 template <typename Writer, typename KeyType, typename ValueType>
 void InsertKeyValuePair(Writer& writer, const KeyType& key, const ValueType& value)
 {
@@ -111,7 +111,7 @@ void ToJson(WriterType& writer, const FString& data)
 template <typename WriterType>
 auto ToJson(WriterType& writer, const ANSICHAR* data)
 {
-    if (data == nullptr) 
+    if (data == nullptr)
 	{
         writer.Null();
         return;
@@ -123,7 +123,7 @@ auto ToJson(WriterType& writer, const ANSICHAR* data)
 template <typename WriterType>
 auto ToJson(WriterType& writer, const TCHAR* data)
 {
-	if (data == nullptr) 
+	if (data == nullptr)
 	{
 		writer.Null();
 		return;
@@ -135,7 +135,7 @@ auto ToJson(WriterType& writer, const TCHAR* data)
 template <typename WriterType, typename DataType>
 void ToJson(WriterType& writer, const TSharedPtr<DataType>& pointer)
 {
-    if (pointer == nullptr) 
+    if (pointer == nullptr)
 	{
         writer.Null();
         return;
@@ -147,7 +147,7 @@ void ToJson(WriterType& writer, const TSharedPtr<DataType>& pointer)
 template <typename WriterType, typename DataType>
 void ToJson(WriterType& writer, const TUniquePtr<DataType>& pointer)
 {
-    if (pointer == nullptr) 
+    if (pointer == nullptr)
 	{
         writer.Null();
         return;
@@ -160,7 +160,7 @@ template <typename WriterType, typename DataType>
 void ToJson(WriterType& writer, const TWeakPtr<DataType>& weakPointer)
 {
     const auto strongPointer = weakPointer.Pin();
-    if (strongPointer == nullptr) 
+    if (strongPointer == nullptr)
 	{
         writer.Null();
         return;
@@ -168,14 +168,14 @@ void ToJson(WriterType& writer, const TWeakPtr<DataType>& weakPointer)
 
 	ToJson(writer, *strongPointer);
 }
-		
+
 template <typename WriterType, typename ContainerType>
 auto ToJson(WriterType& writer, const ContainerType& container) ->
     typename TEnableIf<Traits::TreatAsArray<ContainerType>::Value>::Type
 {
     writer.StartArray();
 
-    for (const auto& item : container) 
+    for (const auto& item : container)
 	{
 		ToJson(writer, item);
     }
@@ -189,14 +189,14 @@ auto ToJson(WriterType& writer, const ContainerType& container) ->
 {
 	writer.StartObject();
 
-	for (const auto& item : container) 
+	for (const auto& item : container)
 	{
 		ToJson(writer, item);
 	}
 
 	writer.EndObject();
 }
-		
+
 template <typename WriterType, typename FirstType, typename SecondType>
 void ToJson(WriterType& writer, const TPair<FirstType, SecondType>& pair)
 {
@@ -206,7 +206,7 @@ void ToJson(WriterType& writer, const TPair<FirstType, SecondType>& pair)
 template <typename WriterType, typename DataType>
 void ToJson(WriterType& writer, const TOptional<DataType>& data)
 {
-	if (!data.IsSet()) 
+	if (!data.IsSet())
 	{
 		writer.Null();
 		return;
@@ -214,7 +214,7 @@ void ToJson(WriterType& writer, const TOptional<DataType>& data)
 
 	ToJson(writer, data.GetValue());
 }
-	
+
 template <typename WriterType, typename DataType>
 auto ToJson(WriterType& writer, const DataType& data) ->
 	typename TEnableIf<Traits::HasToJson<WriterType, DataType>::Value>::Type
@@ -222,7 +222,7 @@ auto ToJson(WriterType& writer, const DataType& data) ->
 	data.ToJson(writer);
 }
 
-	
+
 } // namespace Detail
 } // namespace Serializer
 } // namespace Json

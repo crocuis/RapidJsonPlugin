@@ -29,7 +29,7 @@ void ToJson(
     WriterType& writer, const FString& data);
 
 template <typename WriterType> auto ToJson(WriterType& writer, const ANSICHAR* data);
-	
+
 template <typename WriterType> auto ToJson(WriterType& writer, const TCHAR* data);
 
 template <typename WriterType, typename DataType>
@@ -72,7 +72,7 @@ auto FromJson(
 	ContainerType& container) ->
 	typename TEnableIf<
 		Traits::TreatAsArray<ContainerType>::Value>::Type;
-	
+
 template <typename ContainerType, typename EncodingType, typename AllocatorType>
 auto FromJson(
 	const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value,
@@ -91,7 +91,7 @@ auto FromJson(
 	const rapidjson::GenericMember<EncodingType, AllocatorType>& member, DataType& data) ->
 	typename TEnableIf<
 	Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type;
-	
+
 } // namespace Detail
 } // namespace Deserializer
 } // namespace Json
