@@ -14,21 +14,20 @@ public class RapidJson : ModuleRules
 
     public RapidJson(ReadOnlyTargetRules Target) : base(Target)
     {
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
+            new string[]
+            {
                 "Core", "CoreUObject", "Engine",
             }
-		);
+        );
 
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"CoreUObject",
-			}
-		);
+        PrivateDependencyModuleNames.AddRange(
+            new string[]
+            {
+                "CoreUObject",
+            }
+        );
 
         PublicIncludePaths.Add(ThirdPartyPath);
 

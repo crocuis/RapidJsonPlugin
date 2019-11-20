@@ -14,7 +14,7 @@ using TBoolConstant = TIntegralConstant<bool, _Val>;
 using TrueType = TBoolConstant<true>;
 using FalseType = TBoolConstant<false>;
 
-	// Traits to achieve conditional types for const/non-const iterators.
+// Traits to achieve conditional types for const/non-const iterators.
 template <bool Condition, class TypeIfTrue, class TypeIfFalse>
 class TConditional
 {
@@ -57,9 +57,9 @@ template <typename, typename = void> struct TreatAsArray : FalseType
 
 template <typename DataType>
 struct TreatAsArray<DataType, future_std::void_t<typename DataType::ElementType>>
-    : TConditional<
-		TContainerTraits<DataType>::MoveWillEmptyContainer && !IsPair<typename DataType::ElementType>::Value,
-        TrueType, FalseType>::Type
+	: TConditional<
+	TContainerTraits<DataType>::MoveWillEmptyContainer && !IsPair<typename DataType::ElementType>::Value,
+	TrueType, FalseType>::Type
 {
 };
 
@@ -104,16 +104,16 @@ template <typename, typename = void> struct TreatAsObject : FalseType
  **/
 template <typename DataType>
 struct TreatAsObject<DataType, future_std::void_t<typename DataType::ElementType>>
-    : TConditional<
-		TContainerTraits<DataType>::MoveWillEmptyContainer && IsPair<typename DataType::ElementType>::Value,
-        TrueType, FalseType>::Type
+	: TConditional<
+	TContainerTraits<DataType>::MoveWillEmptyContainer && IsPair<typename DataType::ElementType>::Value,
+	TrueType, FalseType>::Type
 {
 };
 
 template <typename DataType> struct TreatAsValue
 {
-    static constexpr bool Value =
-        !(TreatAsArray<DataType>::Value || TreatAsObject<DataType>::Value);
+	static constexpr bool Value =
+		!(TreatAsArray<DataType>::Value || TreatAsObject<DataType>::Value);
 };
 
 template <typename, typename, typename = void> struct HasToJson : FalseType

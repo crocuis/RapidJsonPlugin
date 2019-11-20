@@ -12,20 +12,20 @@ namespace Detail
 struct FromJsonFunctor
 {
 	template <typename ContainerType, typename EncodingType, typename AllocatorType>
-    void operator()(
-        const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value,
-        ContainerType& container) const
-    {
-        FromJson(json_value, container);
-    }
-
-    template <typename ContainerType, typename EncodingType, typename AllocatorType>
-    void operator()(
-        const rapidjson::GenericMember<EncodingType, AllocatorType>& json_value,
-        ContainerType& container) const
-    {
+	void operator()(
+		const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value,
+		ContainerType& container) const
+	{
 		FromJson(json_value, container);
-    }
+	}
+
+	template <typename ContainerType, typename EncodingType, typename AllocatorType>
+	void operator()(
+		const rapidjson::GenericMember<EncodingType, AllocatorType>& json_value,
+		ContainerType& container) const
+	{
+		FromJson(json_value, container);
+	}
 };
 
 // Template variables are required to have external linkage per the Standard.
@@ -59,148 +59,148 @@ struct DefaultInsertionPolicy
 
 struct BackInsertionPolicy
 {
-    template <typename DataType, typename ContainerType>
-    static void Insert(DataType&& data, ContainerType& container)
-    {
-        container.Add(MoveTemp(data));
-    }
+	template <typename DataType, typename ContainerType>
+	static void Insert(DataType&& data, ContainerType& container)
+	{
+		container.Add(MoveTemp(data));
+	}
 };
 
 namespace Detail
 {
 template <typename JsonValueType> FString TypeToString(const JsonValueType& value)
 {
-    switch (value.GetType())
+	switch (value.GetType())
 	{
-        case rapidjson::Type::kArrayType:
-            return "an array";
-        case rapidjson::Type::kTrueType:
-        case rapidjson::Type::kFalseType:
-            return "a boolean";
-        case rapidjson::Type::kNullType:
-            return "null";
-        case rapidjson::Type::kNumberType:
-            return "a numeric type";
-        case rapidjson::Type::kObjectType:
-            return "an object";
-        case rapidjson::Type::kStringType:
-            return "a string";
-    }
+	case rapidjson::Type::kArrayType:
+		return "an array";
+	case rapidjson::Type::kTrueType:
+	case rapidjson::Type::kFalseType:
+		return "a boolean";
+	case rapidjson::Type::kNullType:
+		return "null";
+	case rapidjson::Type::kNumberType:
+		return "a numeric type";
+	case rapidjson::Type::kObjectType:
+		return "an object";
+	case rapidjson::Type::kStringType:
+		return "a string";
+	}
 
-    return "an unknown type";
+	return "an unknown type";
 }
 
 template <
-    typename StringType, typename InputEncodingType, typename OutputEncodingType,
-    typename EncodingType, typename AllocatorType>
-StringType TransCode(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	typename StringType, typename InputEncodingType, typename OutputEncodingType,
+	typename EncodingType, typename AllocatorType>
+	StringType TransCode(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
 {
-    assert(value.IsString());
+	assert(value.IsString());
 
-    rapidjson::GenericStringStream<InputEncodingType> source{ value.GetString() };
-    rapidjson::GenericStringBuffer<OutputEncodingType> target;
+	rapidjson::GenericStringStream<InputEncodingType> source{ value.GetString() };
+	rapidjson::GenericStringBuffer<OutputEncodingType> target;
 
-    using TranscoderType = rapidjson::Transcoder<InputEncodingType, OutputEncodingType>;
+	using TranscoderType = rapidjson::Transcoder<InputEncodingType, OutputEncodingType>;
 
-    bool successfully_transcoded = true;
-    while (source.Peek() != '\0' && successfully_transcoded)
+	bool successfully_transcoded = true;
+	while (source.Peek() != '\0' && successfully_transcoded)
 	{
-        successfully_transcoded = TranscoderType::Transcode(source, target);
-    }
+		successfully_transcoded = TranscoderType::Transcode(source, target);
+	}
 
-    if (!successfully_transcoded)
+	if (!successfully_transcoded)
 	{
 		UE_LOG(LogRapidJson, Error, TEXT("Failed to transcode strings."));
 		return "";
-    }
+	}
 
-    return target.GetString();
+	return target.GetString();
 }
 
 template <typename DataType> struct ValueExtractor
 {
-    template <typename EncodingType, typename AllocatorType>
-    static bool
-    ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
+	template <typename EncodingType, typename AllocatorType>
+	static bool
+		ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
 		UE_LOG(LogRapidJson, Error, TEXT("Cannot extract unsupported type %s."), *TypeToString(value));
 		return false;
-    }
+	}
 };
 
 template <> struct ValueExtractor<bool>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static bool ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsBool())
+	template <typename EncodingType, typename AllocatorType>
+	static bool ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsBool())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a bool, got %s."), *TypeToString(value));
 			return false;
-        }
+		}
 
-        return value.GetBool();
-    }
+		return value.GetBool();
+	}
 };
 
 template <> struct ValueExtractor<int32>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static int32 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsInt())
+	template <typename EncodingType, typename AllocatorType>
+	static int32 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsInt())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a 32-bit integer, got %s."), *TypeToString(value));
 			return 0;
-        }
+		}
 
-        return value.GetInt();
-    }
+		return value.GetInt();
+	}
 };
 
 template <> struct ValueExtractor<uint32>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static uint32 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsUint())
+	template <typename EncodingType, typename AllocatorType>
+	static uint32 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsUint())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected an unsigned, 32-bit integer, got %s."), *TypeToString(value));
 			return 0;
-        }
+		}
 
-        return value.GetUint();
-    }
+		return value.GetUint();
+	}
 };
 
 template <> struct ValueExtractor<int64>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static int64 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsInt64())
+	template <typename EncodingType, typename AllocatorType>
+	static int64 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsInt64())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a 64-bit integer, got %s."), *TypeToString(value));
 			return 0;
-        }
+		}
 
-        return value.GetInt64();
-    }
+		return value.GetInt64();
+	}
 };
 
 template <> struct ValueExtractor<uint64>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static uint64 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsUint64())
+	template <typename EncodingType, typename AllocatorType>
+	static uint64 ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsUint64())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected an unsigned, 64-bit integer, got %s."), *TypeToString(value));
 			return 0;
 		}
 
-        return value.GetUint64();
-    }
+		return value.GetUint64();
+	}
 };
 
 template <> struct ValueExtractor<float>
@@ -220,17 +220,17 @@ template <> struct ValueExtractor<float>
 
 template <> struct ValueExtractor<double>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static double ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (!value.IsDouble())
+	template <typename EncodingType, typename AllocatorType>
+	static double ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+	{
+		if (!value.IsDouble())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a real, got %s."), *TypeToString(value));
 			return 0;
 		}
 
-        return value.GetDouble();
-    }
+		return value.GetDouble();
+	}
 };
 
 template <> struct ValueExtractor<long double>
@@ -250,89 +250,89 @@ template <> struct ValueExtractor<long double>
 
 template <> struct ValueExtractor<FString>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-        -> typename TEnableIf<
-            TIsSame<typename EncodingType::Ch, ANSICHAR>::Value, FString>::Type
-    {
-        if (!value.IsString())
+	template <typename EncodingType, typename AllocatorType>
+	static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+		-> typename TEnableIf<
+		TIsSame<typename EncodingType::Ch, ANSICHAR>::Value, FString>::Type
+	{
+		if (!value.IsString())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
 			return FString::Empty;
 		}
 
-        return TCHAR_TO_UTF8(value.GetString());
-    }
+		return TCHAR_TO_UTF8(value.GetString());
+	}
 
-    template <typename EncodingType, typename AllocatorType>
-    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-        -> typename TEnableIf<
-			TIsSame<typename EncodingType::Ch, TCHAR>::Value, FString>::Type
-    {
-        if (!value.IsString())
+	template <typename EncodingType, typename AllocatorType>
+	static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+		-> typename TEnableIf<
+		TIsSame<typename EncodingType::Ch, TCHAR>::Value, FString>::Type
+	{
+		if (!value.IsString())
 		{
 			UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
 			return "";
 		}
 
-        return TransCode<FString, rapidjson::UTF16<>, rapidjson::UTF8<>>(value);
-    }
+		return TransCode<FString, rapidjson::UTF16<>, rapidjson::UTF8<>>(value);
+	}
 };
 
 template <typename DataType> struct ValueExtractor<TUniquePtr<DataType>>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static TUniquePtr<DataType>
+	template <typename EncodingType, typename AllocatorType>
+	static TUniquePtr<DataType>
 		ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (value.IsNull())
+	{
+		if (value.IsNull())
 		{
-            return nullptr;
-        }
+			return nullptr;
+		}
 
-        return TUniquePtr<DataType>(ValueExtractor<DataType>::ExtractOrThrow(value));
-    }
+		return TUniquePtr<DataType>(ValueExtractor<DataType>::ExtractOrThrow(value));
+	}
 };
 
 template <typename DataType> struct ValueExtractor<TSharedPtr<DataType>>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static TSharedPtr<DataType>
+	template <typename EncodingType, typename AllocatorType>
+	static TSharedPtr<DataType>
 		ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (value.IsNull())
+	{
+		if (value.IsNull())
 		{
-            return nullptr;
-        }
+			return nullptr;
+		}
 
-        return MakeShared<DataType>(ValueExtractor<DataType>::ExtractOrThrow(value));
-    }
+		return MakeShared<DataType>(ValueExtractor<DataType>::ExtractOrThrow(value));
+	}
 };
 
 template <typename DataType> struct ValueExtractor<TOptional<DataType>>
 {
-    template <typename EncodingType, typename AllocatorType>
-    static TOptional<DataType>
+	template <typename EncodingType, typename AllocatorType>
+	static TOptional<DataType>
 		ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
-    {
-        if (value.IsSet())
+	{
+		if (value.IsSet())
 		{
-            return TOptional<DataType>();
-        }
+			return TOptional<DataType>();
+		}
 
-        return ValueExtractor<DataType>::ExtractOrThrow(value);
-    }
+		return ValueExtractor<DataType>::ExtractOrThrow(value);
+	}
 };
 
 template <typename InsertionPolicy, typename DataType, typename ContainerType>
 void Insert(DataType&& value, ContainerType& container)
 {
-    static_assert(
-        TIsConstructible<DataType, typename ContainerType::ElementType>::Value,
-        "The type being inserted is not the same as, or cannot be converted to, the "
-        "container's value type.");
+	static_assert(
+		TIsConstructible<DataType, typename ContainerType::ElementType>::Value,
+		"The type being inserted is not the same as, or cannot be converted to, the "
+		"container's value type.");
 
-    InsertionPolicy::Insert(MoveTemp(value), container);
+	InsertionPolicy::Insert(MoveTemp(value), container);
 }
 
 template <typename PairType, typename EncodingType, typename AllocatorType>
@@ -360,7 +360,7 @@ typename TEnableIf<
 	using ValueType = typename PairType::ValueType;
 
 	return MakeTuple(ValueExtractor<KeyType>::ExtractOrThrow(member.name),
-			 ValueExtractor<ValueType>::ExtractOrThrow(member.value));
+		ValueExtractor<ValueType>::ExtractOrThrow(member.value));
 }
 
 
@@ -393,21 +393,21 @@ typename TEnableIf<
 }
 
 template <
-    typename InsertionPolicy, typename EncodingType, typename AllocatorType, typename ContainerType>
-void DispatchInsertion(
-    const rapidjson::GenericMember<EncodingType, AllocatorType>& member, ContainerType& container)
+	typename InsertionPolicy, typename EncodingType, typename AllocatorType, typename ContainerType>
+	void DispatchInsertion(
+		const rapidjson::GenericMember<EncodingType, AllocatorType>& member, ContainerType& container)
 {
-    auto pair = ToKeyValuePair<typename ContainerType::ElementType>(member);
-    Insert<InsertionPolicy>(MoveTemp(pair), container);
+	auto pair = ToKeyValuePair<typename ContainerType::ElementType>(member);
+	Insert<InsertionPolicy>(MoveTemp(pair), container);
 }
 
 template <
-    typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
-auto DispatchInsertion(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
-    typename TEnableIf<Traits::TreatAsValue<typename ContainerType::ElementType>::Value>::Type
+	typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
+	auto DispatchInsertion(
+		const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
+	typename TEnableIf<Traits::TreatAsValue<typename ContainerType::ElementType>::Value>::Type
 {
-    using DesiredType = typename ContainerType::ElementType;
+	using DesiredType = typename ContainerType::ElementType;
 	DesiredType desired_type;
 	Deserializer::FromJson(json_value, desired_type);
 
@@ -415,76 +415,76 @@ auto DispatchInsertion(
 }
 
 template <
-    typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
-auto DispatchInsertion(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
-    typename TEnableIf<
-        Traits::TreatAsArray<typename ContainerType::ElementType>::Value ||
-        Traits::TreatAsObject<typename ContainerType::ElementType>::Value>::Type
+	typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
+	auto DispatchInsertion(
+		const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
+	typename TEnableIf<
+	Traits::TreatAsArray<typename ContainerType::ElementType>::Value ||
+	Traits::TreatAsObject<typename ContainerType::ElementType>::Value>::Type
 {
-    static_assert(
-        TIsConstructible<typename ContainerType::ElementType>::Value,
-        "Nested container must be default constructible.");
+	static_assert(
+		TIsConstructible<typename ContainerType::ElementType>::Value,
+		"Nested container must be default constructible.");
 
-    using NestedContainerType = typename ContainerType::ElementType;
+	using NestedContainerType = typename ContainerType::ElementType;
 
 	NestedContainerType nested_container;
-    Deserializer::FromJson(json_value, nested_container);
+	Deserializer::FromJson(json_value, nested_container);
 
-    Insert<InsertionPolicy>(MoveTemp(nested_container), container);
+	Insert<InsertionPolicy>(MoveTemp(nested_container), container);
 }
 
 template <
-    typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
-void DeserializeJsonObject(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container)
+	typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
+	void DeserializeJsonObject(
+		const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container)
 {
-    if (!json_value.IsObject())
+	if (!json_value.IsObject())
 	{
 		UE_LOG(LogRapidJson, Error, TEXT("Expected an object, got %s."), *TypeToString(json_value));
 		return;
 	}
 
-    const auto& json_object = json_value.GetObject();
-    for (const auto& nested_json_value : json_object)
+	const auto& json_object = json_value.GetObject();
+	for (const auto& nested_json_value : json_object)
 	{
-        DispatchInsertion<InsertionPolicy>(nested_json_value, container);
-    }
+		DispatchInsertion<InsertionPolicy>(nested_json_value, container);
+	}
 }
 
 template <
-    typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
-void DeserializeJsonArray(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container)
+	typename InsertionPolicy, typename ContainerType, typename EncodingType, typename AllocatorType>
+	void DeserializeJsonArray(
+		const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container)
 {
-    if (!json_value.IsArray())
+	if (!json_value.IsArray())
 	{
-        UE_LOG(LogRapidJson, Error, TEXT("Expected an array, got %s."), *TypeToString(json_value));
+		UE_LOG(LogRapidJson, Error, TEXT("Expected an array, got %s."), *TypeToString(json_value));
 		return;
-    }
+	}
 
-    const auto& json_array = json_value.GetArray();
-    for (const auto& nested_json_value : json_array)
+	const auto& json_array = json_value.GetArray();
+	for (const auto& nested_json_value : json_array)
 	{
 		DispatchInsertion<InsertionPolicy>(nested_json_value, container);
-    }
+	}
 }
 
 
 template <typename ContainerType, typename EncodingType, typename AllocatorType>
 auto FromJson(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
+	const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
 	typename TEnableIf<
-        Traits::TreatAsArray<ContainerType>::Value>::Type
+	Traits::TreatAsArray<ContainerType>::Value>::Type
 {
 	DeserializeJsonArray<DefaultInsertionPolicy>(json_value, container);
 }
 
 template <typename ContainerType, typename EncodingType, typename AllocatorType>
 auto FromJson(
-    const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
-    typename TEnableIf<
-        Traits::TreatAsObject<ContainerType>::Value>::Type
+	const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, ContainerType& container) ->
+	typename TEnableIf<
+	Traits::TreatAsObject<ContainerType>::Value>::Type
 {
 	DeserializeJsonObject<BackInsertionPolicy>(json_value, container);
 }
@@ -493,7 +493,7 @@ template <typename DataType, typename EncodingType, typename AllocatorType>
 auto FromJson(
 	const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, DataType& data) ->
 	typename TEnableIf<
-		Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
+	Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
 {
 	if (!json_value.IsObject())
 	{
@@ -508,7 +508,7 @@ template <typename DataType, typename EncodingType, typename AllocatorType>
 auto FromJson(
 	const rapidjson::GenericMember<EncodingType, AllocatorType>& member, DataType& data) ->
 	typename TEnableIf<
-		Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
+	Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
 {
 	if (!member.value.IsObject())
 	{
@@ -523,8 +523,8 @@ template <typename DataType, typename EncodingType, typename AllocatorType>
 auto FromJson(
 	const rapidjson::GenericValue<EncodingType, AllocatorType>& json_value, DataType& data) ->
 	typename TEnableIf<
-		Traits::TreatAsValue<typename DataType>::Value &&
-		!Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
+	Traits::TreatAsValue<typename DataType>::Value &&
+	!Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
 {
 	data = ValueExtractor<DataType>::ExtractOrThrow(json_value);
 }
@@ -533,8 +533,8 @@ template <typename DataType, typename EncodingType, typename AllocatorType>
 auto FromJson(
 	const rapidjson::GenericMember<EncodingType, AllocatorType>& member, DataType& data) ->
 	typename TEnableIf<
-		Traits::TreatAsValue<typename DataType>::Value &&
-		!Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
+	Traits::TreatAsValue<typename DataType>::Value &&
+	!Traits::HasFromJson<DataType, EncodingType, AllocatorType>::Value>::Type
 {
 	data = ValueExtractor<DataType>::ExtractOrThrow(member.value);
 }
