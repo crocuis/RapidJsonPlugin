@@ -109,6 +109,18 @@ void ToJson(WriterType& writer, const FString& data)
 }
 
 template <typename WriterType>
+void ToJson(WriterType& writer, const FName& data)
+{
+    writer.String(TCHAR_TO_UTF8(*data.ToString()));
+}
+
+template <typename WriterType>
+void ToJson(WriterType& writer, const FText& data)
+{
+    writer.String(TCHAR_TO_UTF8(*data.ToString()));
+}
+
+template <typename WriterType>
 auto ToJson(WriterType& writer, const ANSICHAR* data)
 {
 	if (data == nullptr)

@@ -279,6 +279,68 @@ template <> struct ValueExtractor<FString>
 	}
 };
 
+template <> struct ValueExtractor<FName>
+{
+    template <typename EncodingType, typename AllocatorType>
+    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+        -> typename TEnableIf<
+        TIsSame<typename EncodingType::Ch, ANSICHAR>::Value, FName>::Type
+    {
+        if (!value.IsString())
+        {
+            UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
+            return FString::Empty;
+        }
+
+        return TCHAR_TO_UTF8(value.GetString());
+    }
+
+    template <typename EncodingType, typename AllocatorType>
+    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+        -> typename TEnableIf<
+        TIsSame<typename EncodingType::Ch, TCHAR>::Value, FName>::Type
+    {
+        if (!value.IsString())
+        {
+            UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
+            return "";
+        }
+
+        return TransCode<FName, rapidjson::UTF16<>, rapidjson::UTF8<>>(value);
+    }
+};
+
+template <> struct ValueExtractor<FText>
+{
+    template <typename EncodingType, typename AllocatorType>
+    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+        -> typename TEnableIf<
+        TIsSame<typename EncodingType::Ch, ANSICHAR>::Value, FText>::Type
+    {
+        if (!value.IsString())
+        {
+            UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
+            return FText::GetEmpty();
+        }
+
+        return FText::FromString(TCHAR_TO_UTF8(value.GetString()));
+    }
+
+    template <typename EncodingType, typename AllocatorType>
+    static auto ExtractOrThrow(const rapidjson::GenericValue<EncodingType, AllocatorType>& value)
+        -> typename TEnableIf<
+        TIsSame<typename EncodingType::Ch, TCHAR>::Value, FText>::Type
+    {
+        if (!value.IsString())
+        {
+            UE_LOG(LogRapidJson, Error, TEXT("Expected a string, got %s."), *TypeToString(value));
+            return FText::GetEmpty();
+        }
+
+        return FText::FromString(TransCode<FString, rapidjson::UTF16<>, rapidjson::UTF8<>>(value));
+    }
+};
+
 template <typename DataType> struct ValueExtractor<TUniquePtr<DataType>>
 {
 	template <typename EncodingType, typename AllocatorType>
